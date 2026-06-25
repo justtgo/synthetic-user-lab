@@ -3,10 +3,8 @@ import { PERSONAS } from './personas/index.js';
 import { sendMessage } from './lib/gemini.js';
 import { matchGroundTruth } from './personas/groundTruth.js';
 
-const PERSONA_ID = 'millennial';
-
-export default function Compare({ apiKey, model }) {
-  const persona = PERSONAS[PERSONA_ID];
+export default function Compare({ apiKey, model, personaId }) {
+  const persona = PERSONAS[personaId];
   const [input, setInput] = useState('');
   const [question, setQuestion] = useState('');
   const [synthetic, setSynthetic] = useState('');
@@ -22,7 +20,7 @@ export default function Compare({ apiKey, model }) {
     setQuestion(q);
     setSynthetic('');
     setPersonaSim('');
-    setGt(matchGroundTruth(q));
+    setGt(matchGroundTruth(personaId, q));
     setLoading(true);
     try {
       const [s, p] = await Promise.all([

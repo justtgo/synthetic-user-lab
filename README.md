@@ -35,10 +35,12 @@ Compare the two modes' responses to the same question. The difference is the art
 The research document the personas are distilled from contains the real data, with a source for every figure, so a reader can verify any claim. (In the full project it lives in `01-research/ground-truth-fashion-ecommerce.md`.)
 
 Personas in this prototype:
+- ✅ **Gen Z** (14–29) — implemented (both modes)
 - ✅ **Millennial** (30–45) — implemented (both modes)
-- 🔜 Gen Z (14–29)
-- 🔜 Gen X (46–61)
-- 🔜 Boomer (62–80)
+- ✅ **Gen X** (46–61) — implemented (both modes)
+- ✅ **Boomer** (62–80) — implemented (both modes)
+
+Switch between them with the **Persona** dropdown. Each has generation-specific ground-truth data in the comparator.
 
 ## Run Locally
 
@@ -108,9 +110,12 @@ synthetic-user-lab/
     ├── lib/
     │   └── gemini.js      # Gemini API wrapper (BYOK, direct browser)
     └── personas/
-        ├── index.js       # Persona registry + modes
+        ├── index.js       # Persona registry + modes (all 4 generations)
+        ├── genz.js        # Gen Z persona (synthetic + persona_simulation)
         ├── millennial.js  # Millennial persona (synthetic + persona_simulation)
-        └── groundTruth.js # Cited real data per research topic (comparator column 3)
+        ├── genx.js        # Gen X persona (synthetic + persona_simulation)
+        ├── boomer.js      # Boomer persona (synthetic + persona_simulation)
+        └── groundTruth.js # Cited real data per generation x topic (comparator column 3)
 ```
 
 ## How to Extend

@@ -4,12 +4,12 @@ import { sendMessage, MODELS } from './lib/gemini.js';
 import Compare from './Compare.jsx';
 
 const KEY_STORAGE = 'sul_gemini_key';
-const PERSONA_ID = 'millennial';
 
 export default function App() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(KEY_STORAGE) || '');
   const [keyDraft, setKeyDraft] = useState('');
   const [model, setModel] = useState('gemini-2.5-flash');
+  const [personaId, setPersonaId] = useState('millennial');
   const [view, setView] = useState('interview'); // 'interview' | 'compare'
   const [mode, setMode] = useState('persona_simulation');
   const [messages, setMessages] = useState([]);
@@ -18,7 +18,7 @@ export default function App() {
   const [error, setError] = useState('');
   const chatEndRef = useRef(null);
 
-  const persona = PERSONAS[PERSONA_ID];
+  const persona = PERSONAS[personaId];
   // Owner-only reset: the reset link is hidden from normal visitors. Open the site with
   // ?owner=1 at the end of the URL to reveal it. (This hides the control; it is not a
   // password — but a reset only ever clears the key in the current browser, never anyone
@@ -89,7 +89,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transcript-${PERSONA_ID}-${mode}.md`;
+    a.download = `transcript-${personaId}-${mode}.md`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -172,6 +172,24 @@ export default function App() {
               Compare
             </button>
           </div>
+        </div>
+
+        <div className="control-group">
+          <label>Persona</label>
+          <select
+            value={personaId}
+            onChange={(e) => {
+              setPersonaId(e.target.value);
+              setMessages([]);
+              setError('');
+            }}
+          >
+            {Object.entries(PERSONAS).map(([id, p]) => (
+              <option key={id} value={id}>
+                {p.profile.generation} ({p.profile.ageRange})
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="control-group">
@@ -265,7 +283,7 @@ export default function App() {
           </div>
         </>
       ) : (
-        <Compare apiKey={apiKey} model={model} />
+        <Compare key={personaId} apiKey={apiKey} model={model} personaId={personaId} />
       )}
 
       <footer className="footer">
