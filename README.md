@@ -102,13 +102,15 @@ synthetic-user-lab/
 ├── preview.html
 └── src/
     ├── main.jsx           # React boot
-    ├── App.jsx            # Main component (chat, controls, export)
+    ├── App.jsx            # Main component (Interview + Compare views, controls, export)
+    ├── Compare.jsx        # Side-by-side comparator (synthetic | persona sim | ground truth)
     ├── styles.css         # All styling
     ├── lib/
     │   └── gemini.js      # Gemini API wrapper (BYOK, direct browser)
     └── personas/
         ├── index.js       # Persona registry + modes
-        └── millennial.js  # Millennial persona (synthetic + persona_simulation)
+        ├── millennial.js  # Millennial persona (synthetic + persona_simulation)
+        └── groundTruth.js # Cited real data per research topic (comparator column 3)
 ```
 
 ## How to Extend
