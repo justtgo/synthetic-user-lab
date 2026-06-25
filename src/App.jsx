@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { PERSONAS, MODES } from './personas/index.js';
 import { sendMessage, MODELS } from './lib/gemini.js';
 import Compare from './Compare.jsx';
+import { DEMO } from './personas/demoData.js';
 
 const KEY_STORAGE = 'sul_gemini_key';
 
 export default function App() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(KEY_STORAGE) || '');
+  const [demo, setDemo] = useState(false);
   const [keyDraft, setKeyDraft] = useState('');
   const [model, setModel] = useState('gemini-2.5-flash');
   const [personaId, setPersonaId] = useState('millennial');
@@ -55,6 +57,21 @@ export default function App() {
     if (!q || loading) return;
     setError('');
     setInput('');
+
+    if (demo) {
+      const captured = DEMO[personaId]?.[q]?.[mode];
+      if (captured) {
+        setMessages([
+          { role: 'user', content: q },
+          { role: 'assistant', content: captured },
+        ]);
+      } else {
+        setMessages([]);
+        setError('Demo mode shows the captured research questions above. Add your own key to ask anything live.');
+      }
+      return;
+    }
+
     const next = [...messages, { role: 'user', content: q }];
     setMessages(next);
     setLoading(true);
@@ -94,8 +111,8 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
-  // ---- Setup screen (no API key yet) ----
-  if (!apiKey) {
+  // ---- Setup screen (no API key yet, and not in demo) ----
+  if (!apiKey && !demo) {
     return (
       <div className="container setup">
         <header className="header">
@@ -106,7 +123,19 @@ export default function App() {
         </header>
 
         <div className="setup-card">
-          <h2>Step 1 — Your Google AI Studio API key</h2>
+          <div className="demo-cta">
+            <h2 style={{ marginTop: 0 }}>See it in action, no setup</h2>
+            <p className="muted">
+              The fastest way in: open the demo. These are real answers captured from this tool for all
+              four generations, synthetic vs persona simulation vs documented data, side by side. No key,
+              no waiting.
+            </p>
+            <button onClick={() => setDemo(true)}>See the demo</button>
+          </div>
+
+          <div className="or-divider"><span>or use your own key to ask live</span></div>
+
+          <h2>Your Google AI Studio API key</h2>
           <p className="muted">
             This tool calls the Google Gemini API directly from your browser. Your key is stored only
             in this browser's localStorage and is never sent anywhere except Google.
@@ -155,6 +184,16 @@ export default function App() {
         </div>
       </header>
 
+      {demo && (
+        <div className="demo-banner">
+          <span>
+            <strong>Demo mode.</strong> These are real answers captured from this tool, no live calls.
+            Pick a question below, switch persona or mode, or open Compare.
+          </span>
+          <button className="ghost" onClick={() => setDemo(false)}>Use my own key</button>
+        </div>
+      )}
+
       <div className="controls">
         <div className="control-group">
           <label>View</label>
@@ -192,16 +231,18 @@ export default function App() {
           </select>
         </div>
 
-        <div className="control-group">
-          <label>Model</label>
-          <select value={model} onChange={(e) => setModel(e.target.value)}>
-            {Object.entries(MODELS).map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!demo && (
+          <div className="control-group">
+            <label>Model</label>
+            <select value={model} onChange={(e) => setModel(e.target.value)}>
+              {Object.entries(MODELS).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {view === 'interview' ? (
@@ -214,7 +255,11 @@ export default function App() {
                   <button
                     key={id}
                     className={`toggle ${mode === id ? 'active' : ''}`}
-                    onClick={() => setMode(id)}
+                    onClick={() => {
+                      setMode(id);
+                      setMessages([]);
+                      setError('');
+                    }}
                   >
                     {m.label}
                   </button>
@@ -259,19 +304,35 @@ export default function App() {
             <div ref={chatEndRef} />
           </div>
 
-          <div className="input-row">
-            <input
-              type="text"
-              placeholder="Ask something..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && ask()}
-              disabled={loading}
-            />
-            <button onClick={() => ask()} disabled={loading}>
-              Send
-            </button>
-          </div>
+          {demo ? (
+            <p className="muted small demo-input-note">
+              Demo mode, pick one of the questions above. To ask your own questions live,{' '}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDemo(false);
+                }}
+              >
+                add your key
+              </a>
+              .
+            </p>
+          ) : (
+            <div className="input-row">
+              <input
+                type="text"
+                placeholder="Ask something..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && ask()}
+                disabled={loading}
+              />
+              <button onClick={() => ask()} disabled={loading}>
+                Send
+              </button>
+            </div>
+          )}
 
           <div className="actions">
             <button className="ghost" onClick={exportTranscript} disabled={messages.length === 0}>
@@ -283,7 +344,7 @@ export default function App() {
           </div>
         </>
       ) : (
-        <Compare key={personaId} apiKey={apiKey} model={model} personaId={personaId} />
+        <Compare key={personaId} apiKey={apiKey} model={model} personaId={personaId} demo={demo} />
       )}
 
       <footer className="footer">

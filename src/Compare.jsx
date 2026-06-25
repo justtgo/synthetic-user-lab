@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { PERSONAS } from './personas/index.js';
 import { sendMessage } from './lib/gemini.js';
 import { matchGroundTruth } from './personas/groundTruth.js';
+import { DEMO } from './personas/demoData.js';
 
-export default function Compare({ apiKey, model, personaId }) {
+export default function Compare({ apiKey, model, personaId, demo }) {
   const persona = PERSONAS[personaId];
   const [input, setInput] = useState('');
   const [question, setQuestion] = useState('');
@@ -17,6 +18,20 @@ export default function Compare({ apiKey, model, personaId }) {
     const q = (qArg ?? input).trim();
     if (!q || loading) return;
     setError('');
+
+    if (demo) {
+      const cap = DEMO[personaId]?.[q];
+      if (cap) {
+        setQuestion(q);
+        setGt(matchGroundTruth(personaId, q));
+        setSynthetic(cap.synthetic);
+        setPersonaSim(cap.persona_simulation);
+      } else {
+        setError('Demo mode: pick one of the research questions below, or add your key to ask your own.');
+      }
+      return;
+    }
+
     setQuestion(q);
     setSynthetic('');
     setPersonaSim('');
