@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview — Synthetic User Lab</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --border: #e7e5e4;
+      --text: #1c1917;
+      --text-muted: #78716c;
+      --primary: #18181b;
+      --primary-hover: #27272a;
+      --accent: #ea580c;
+      --warning-bg: #fef3c7;
+      --warning-border: #f59e0b;
+      --error-bg: #fee2e2;
+      --error-text: #991b1b;
+      --user-bg: #f4f4f5;
+      --assistant-bg: #fff7ed;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .preview-banner {
+      background: #1c1917;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .preview-banner code {
+      background: rgba(255,255,255,0.15);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    code {
+      background: var(--user-bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    a { color: var(--accent); text-underline-offset: 2px; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .header h1 {
+      margin: 0 0 4px 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toggle-group {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .toggle {
+      background: var(--surface);
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .toggle:hover { background: var(--user-bg); }
+    .toggle.active { background: var(--primary); color: white; }
+    .toggle:not(:last-child) { border-right: 1px solid var(--border); }
+
+    select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .mode-warning {
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning-border);
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #78350f;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 300px;
+      padding: 4px;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      max-width: 88%;
+    }
+
+    .message-user {
+      background: var(--user-bg);
+      align-self: flex-end;
+    }
+
+    .message-assistant {
+      background: var(--assistant-bg);
+      align-self: flex-start;
+      border-left: 3px solid var(--accent);
+    }
+
+    .message-role {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--surface);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    button:not(.ghost):not(.toggle):not(.suggestion) {
+      background: var(--primary);
+      color: white;
+    }
+
+    .ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .muted { color: var(--text-muted); }
+    .small { font-size: 12px; }
+
+    .comparison-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px dashed var(--border);
+    }
+
+    .comparison-section h2 {
+      font-size: 18px;
+      margin: 0 0 8px 0;
+    }
+
+    .comparison-section .muted {
+      margin-bottom: 24px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .comparison-col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .comparison-col h3 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .comparison-col .label {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .label-bad { background: #fee2e2; color: #991b1b; }
+    .label-good { background: #dcfce7; color: #14532d; }
+
+    .comparison-quote {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    @media (max-width: 700px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">
+    📸 Static preview — the real app needs <code>npm install &amp;&amp; npm run dev</code>. The conversation below is mock. Powered by Gemini Free Tier.
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div>
+        <h1>Synthetic User Lab</h1>
+        <p class="subtitle">Millennial (30–45) · Fashion E-commerce</p>
+      </div>
+      <button class="ghost" title="Clear stored API key">🔑 Reset key</button>
+    </header>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Mode</label>
+        <div class="toggle-group">
+          <button class="toggle">Synthetic user</button>
+          <button class="toggle active">Persona simulation</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Model</label>
+        <select>
+          <option>Gemini 2.5 Flash (stable, recommended)</option>
+          <option>Gemini 2.5 Flash-Lite (faster, more daily requests)</option>
+          <option>Gemini 3 Flash (preview, more capable)</option>
+          <option>Gemini 3.1 Flash-Lite (preview, fastest)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mode-warning">
+      <strong>Persona simulation:</strong> Better, but still limited. AI does not truly feel, it only imitates patterns.
+    </div>
+
+    <div class="chat">
+      <div class="message message-user">
+        <div class="message-role">You</div>
+        <div class="message-content">Why do you abandon shopping carts?</div>
+      </div>
+
+      <div class="message message-assistant">
+        <div class="message-role">Alex</div>
+        <div class="message-content">Honestly? Mostly when I'm hit with surprise shipping costs at the very end. I had a £40 dress at COS last week, got to checkout, suddenly £8 shipping plus a "service charge" — I just closed the tab. It's not even about the money, it's that I felt tricked.
+
+The other big one is when sites make me create an account. I shop too much to be juggling 30 brand accounts. Guest checkout or I'm out.</div>
+      </div>
+
+      <div class="message message-user">
+        <div class="message-role">You</div>
+        <div class="message-content">How do you use reviews when buying from a new brand?</div>
+      </div>
+
+      <div class="message message-assistant">
+        <div class="message-role">Alex</div>
+        <div class="message-content">First check is always the recent ones — like, last 2-3 months. If reviews are all from 2023, I assume the product or quality has changed and I get nervous.
+
+But here's the thing — I don't trust the brand's own review section anymore. Too many of those look astroturfed. So I'll usually go to Reddit and search "[brand name] review" to see what actual people say. If there's a r/femalefashionadvice thread, I read that. Trustpilot for shipping/returns issues specifically.
+
+Honestly it's a lot of work. Sometimes I just give up and stick with brands I know.</div>
+      </div>
+
+      <div class="message message-user">
+        <div class="message-role">You</div>
+        <div class="message-content">Tell me about the last time you didn't buy something you'd put in your cart</div>
+      </div>
+
+      <div class="message message-assistant">
+        <div class="message-role">Alex</div>
+        <div class="message-content">Last Sunday. There was a linen jacket from Arket — £150 — that I'd been thinking about for two weeks. Got to checkout, then I just... paused. I asked myself "would I wear this in three months?" and I genuinely didn't know. Closed the tab.
+
+It's still in my saved items. I'll probably go back. Or I won't. That's how it usually goes with anything over £100 — the actual purchase moment is when I get honest with myself, and sometimes the answer isn't yes.</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input type="text" placeholder="Ask something..." value="" />
+      <button>Send</button>
+    </div>
+
+    <div class="actions">
+      <button class="ghost">📥 Export transcript (.md)</button>
+      <button class="ghost">🔄 Reset conversation</button>
+    </div>
+
+    <footer class="footer">
+      <p class="muted small">
+        ⚠️ This tool generates AI content that imitates a user. It is not a real user.
+        Don't make product decisions based on this alone. Use it for hypotheses, not conclusions.
+      </p>
+    </footer>
+
+    <div class="comparison-section">
+      <h2>The article's central demonstration</h2>
+      <p class="muted">Same question, two modes. This is what the toggle reveals.</p>
+
+      <p style="margin-bottom: 16px;"><strong>Question asked:</strong> <em>"Why do you abandon shopping carts?"</em></p>
+
+      <div class="comparison-grid">
+        <div class="comparison-col">
+          <span class="label label-bad">Synthetic mode</span>
+          <h3>Generic, agreeable, plausible-sounding</h3>
+          <div class="comparison-quote">
+            "I usually abandon my cart when the shipping costs are too high or when the checkout process takes too long. Sometimes I also abandon if I'm not sure about the product quality or if I find a better deal elsewhere. Trust is also important — if the site doesn't look secure, I'll leave."
+          </div>
+          <p class="muted small" style="margin-top: 12px;">
+            ⚠️ Reads like a marketing report. Lists all top-5 Baymard reasons. No specificity. No emotion. No contradiction.
+          </p>
+        </div>
+
+        <div class="comparison-col">
+          <span class="label label-good">Persona simulation mode</span>
+          <h3>Specific, situated, with friction</h3>
+          <div class="comparison-quote">
+            "Mostly when I'm hit with surprise shipping costs at the very end. Had a £40 dress at COS last week, suddenly £8 shipping plus a 'service charge' — I just closed the tab. It's not even about the money, it's that I felt tricked."
+          </div>
+          <p class="muted small" style="margin-top: 12px;">
+            ✓ Names brands. Cites a concrete moment. Reveals the emotional driver under the rational complaint. Closer to a real research voice — but still AI-generated.
+          </p>
+        </div>
+      </div>
+
+      <p class="muted small" style="margin-top: 24px;">
+        Even the "better" response is still imitation. A real interview would surface contradictions, hesitations, and silences that no system prompt can fake. This comparison is the article's main exhibit: synthetic users vary in quality — but none of them is a substitute for real human voices.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
